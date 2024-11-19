@@ -6,3 +6,5 @@ __pycache__
 labs.ipynb
 test.py
 models
+config.txt
+config_modification_tutorial.txt

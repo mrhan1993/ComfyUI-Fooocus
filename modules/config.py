@@ -2,9 +2,9 @@ import os
 import json
 import math
 import numbers
+import tempfile
 
 import args_manager
-import tempfile
 import modules.flags
 import modules.sdxl_styles
 
@@ -12,28 +12,33 @@ from modules.model_loader import load_file_from_url
 from modules.extra_utils import makedirs_with_log, get_files_from_folder, try_eval_env_var
 from modules.flags import OutputFormat, Performance, MetadataScheme
 
+root_dir = os.path.join(
+    os.path.dirname(os.path.abspath(__file__)), "../")
 
 def get_config_path(key, default_value):
+    """
+    try read config file from environment variable or default path
+    """
     env = os.getenv(key)
     if env is not None and isinstance(env, str):
         print(f"Environment: {key} = {env}")
         return env
-    else:
-        return os.path.abspath(default_value)
+    return os.path.abspath(default_value)
 
 wildcards_max_bfs_depth = 64
-config_path = get_config_path('config_path', "./config.txt")
-config_example_path = get_config_path('config_example_path', "config_modification_tutorial.txt")
+config_path = get_config_path('config_path', os.path.join(root_dir, 'config.txt'))
+config_example_path = get_config_path(
+    'config_example_path',
+    os.path.join(root_dir, 'config_modification_tutorial.txt'))
 config_dict = {}
 always_save_keys = []
 visited_keys = []
 
 try:
-    with open(os.path.abspath(f'./presets/default.json'), "r", encoding="utf-8") as json_file:
+    with open(os.path.join(root_dir, 'presets/default.json'), "r", encoding="utf-8") as json_file:
         config_dict.update(json.load(json_file))
 except Exception as e:
-    print(f'Load default preset failed.')
-    print(e)
+    print('Load default preset failed, message: {e}')
 
 try:
     if os.path.exists(config_path):
@@ -52,11 +57,13 @@ except Exception as e:
 def try_load_deprecated_user_path_config():
     global config_dict
 
-    if not os.path.exists('user_path_config.txt'):
+    if not os.path.exists(os.path.join(root_dir, 'user_path_config.txt')):
         return
 
     try:
-        deprecated_config_dict = json.load(open('user_path_config.txt', "r", encoding="utf-8"))
+        deprecated_config_dict = json.load(
+            open(os.path.join(root_dir, 'user_path_config.txt'), "r", encoding="utf-8")
+        )
 
         def replace_config(old_key, new_key):
             if old_key in deprecated_config_dict:
@@ -74,7 +81,7 @@ def try_load_deprecated_user_path_config():
         replace_config('fooocus_expansion_path', 'path_fooocus_expansion')
         replace_config('temp_outputs_path', 'path_outputs')
 
-        if deprecated_config_dict.get("default_model", None) == 'juggernautXL_version6Rundiffusion.safetensors':
+        if deprecated_config_dict.get("default_model", None) == 'juggernautXL_version8Rundiffusion.safetensors':
             os.replace('user_path_config.txt', 'user_path_config-deprecated.txt')
             print('Config updated successfully in silence. '
                   'A backup of previous config is written to "user_path_config-deprecated.txt".')
@@ -85,11 +92,10 @@ def try_load_deprecated_user_path_config():
             config_dict.update(deprecated_config_dict)
             print('Loading using deprecated old models and deprecated old configs.')
             return
-        else:
-            os.replace('user_path_config.txt', 'user_path_config-deprecated.txt')
-            print('Config updated successfully by user. '
-                  'A backup of previous config is written to "user_path_config-deprecated.txt".')
-            return
+        os.replace('user_path_config.txt', 'user_path_config-deprecated.txt')
+        print('Config updated successfully by user. '
+              'A backup of previous config is written to "user_path_config-deprecated.txt".')
+        return
     except Exception as e:
         print('Processing deprecated config failed')
         print(e)
@@ -99,7 +105,7 @@ def try_load_deprecated_user_path_config():
 try_load_deprecated_user_path_config()
 
 def get_presets():
-    preset_folder = 'presets'
+    preset_folder = os.path.join(root_dir, 'presets')
     presets = ['initial']
     if not os.path.exists(preset_folder):
         print('No presets found.')
@@ -113,11 +119,11 @@ def update_presets():
 
 def try_get_preset_content(preset):
     if isinstance(preset, str):
-        preset_path = os.path.abspath(f'./presets/{preset}.json')
+        preset_path = os.path.abspath(os.path.join(root_dir, f'presets/{preset}.json'))
         try:
             if os.path.exists(preset_path):
-                with open(preset_path, "r", encoding="utf-8") as json_file:
-                    json_content = json.load(json_file)
+                with open(preset_path, "r", encoding="utf-8") as fp:
+                    json_content = json.load(fp)
                     print(f'Loaded preset: {preset_path}')
                     return json_content
             else:
