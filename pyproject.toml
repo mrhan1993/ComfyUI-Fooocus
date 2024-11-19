@@ -1,0 +1,41 @@
+[project]
+name = "comfyui-fooocus"
+description = "This extension provides image generation features based on Fooocus."
+version = "1.0.0"
+license = "LICENSE"
+dependencies = [
+    "torchsde",
+    "einops",
+    "transformers",
+    "safetensors",
+    "accelerate",
+    "pyyaml",
+    "pillow",
+    "scipy",
+    "tqdm",
+    "psutil",
+    "pytorch_lightning",
+    "omegaconf",
+    "pygit2",
+    "opencv-contrib-python-headless",
+    "httpx",
+    "onnxruntime",
+    "timm",
+    "numpy",
+    "tokenizers",
+    "packaging",
+    "rembg",
+    "groundingdino-py",
+    "segment_anything",
+    "sse_starlette",
+    "sqlalchemy"
+]
+
+[project.urls]
+Repository = "https://github.com/mrhan1993/ComfyUI-Fooocus"
+#  Used by Comfy Registry https://comfyregistry.org
+
+[tool.comfy]
+PublisherId = "comfy_fooocus"
+DisplayName = "ComfyUI-Fooocus"
+Icon = ""
