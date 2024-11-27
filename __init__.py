@@ -1,6 +1,7 @@
 import sys
 import os
-node_root = os.path.dirname(os.path.dirname(__file__))
+node_root = os.path.dirname(__file__)
 sys.path.append(node_root)
+print(sys.path)
 
 from .nodes import *

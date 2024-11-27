@@ -8,11 +8,9 @@ import json
 import uuid
 import datetime
 
+import numpy as np
+import torch
 from PIL import Image
-
-from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker
-from fastapi import Response
 
 from apis.models.base import CurrentTask, GenerateMaskRequest
 from apis.models.response import RecordResponse
@@ -34,15 +32,6 @@ from modules.config import path_outputs
 
 ROOT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 INPUT_PATH = os.path.join(ROOT_DIR, '..', 'inputs')
-
-engine = create_engine(
-    f"sqlite:///{path_outputs}/db.sqlite3",
-    connect_args={"check_same_thread": False},
-    future=True
-)
-Session = sessionmaker(bind=engine, autoflush=True)
-session = Session()
-
 
 async def execute_in_background(task: AsyncTask, raw_req: CommonRequest, in_queue_mills):
     """
@@ -99,80 +88,21 @@ async def process_params(request: CommonRequest):
     task = AsyncTask(args=params, task_id=task_id)
     async_tasks.append(task)
     in_queue_mills = int(datetime.datetime.now().timestamp() * 1000)
-    session.add(GenerateRecord(
-        task_id=task.task_id,
-        req_params=json.loads(raw_req.model_dump_json()),
-        webhook_url=raw_req.webhook_url,
-        in_queue_mills=in_queue_mills
-    ))
-    session.commit()
+    # session.add(GenerateRecord(
+    #     task_id=task.task_id,
+    #     req_params=json.loads(raw_req.model_dump_json()),
+    #     webhook_url=raw_req.webhook_url,
+    #     in_queue_mills=in_queue_mills
+    # ))
+    # session.commit()
 
     return task, in_queue_mills, raw_req, task_id
 
 
-async def stream_output(request: CommonRequest):
+async def binary_output(request: CommonRequest):
     """
     Calls the worker with the given params.
     :param request: The request object containing the params.
-    """
-    task, in_queue_mills, raw_req, task_id = await process_params(request)
-
-    save_name = raw_req.save_name
-    ext = raw_req.output_format
-    started = False
-    finished = False
-    while not finished:
-        await asyncio.sleep(0.2)
-        if len(task.yields) > 0:
-            if not started:
-                started = True
-                CurrentTask.task = task
-                started_at = int(datetime.datetime.now().timestamp() * 1000)
-                CurrentTask.ct = RecordResponse(
-                    task_id=task.task_id,
-                    req_params=json.loads(raw_req.model_dump_json()),
-                    in_queue_mills=in_queue_mills,
-                    start_mills=started_at,
-                    task_status="running",
-                    progress=0,
-                    result=[]
-                )
-            flag, product = task.yields.pop(0)
-            if flag == 'preview':
-                if len(task.yields) > 0:
-                    if task.yields[0][0] == 'preview':
-                        continue
-                percentage, title, image = product
-                text = json.dumps({
-                    "progress": percentage,
-                    "preview": "data:image/png;base64," + narray_to_base64img(image) if narray_to_base64img(image) is not None else narray_to_base64img(image),
-                    "message": title,
-                    "images": []
-                })
-                CurrentTask.ct.progress = percentage
-                CurrentTask.ct.preview = narray_to_base64img(image)
-                yield f"{text}\n"
-            if flag == 'finish':
-                # await post_worker(task=task, started_at=started_at)
-                await asyncio.create_task(post_worker(task=task, started_at=started_at, target_name=save_name, ext=ext))
-                text = json.dumps({
-                    "progress": 100,
-                    "preview": None,
-                    "message": "Finished",
-                    "images": url_path(task.results)
-                })
-                yield f"{text}\n"
-                finished = True
-                CurrentTask.task = None
-
-
-async def binary_output(
-        request: CommonRequest,
-        ext: str):
-    """
-    Calls the worker with the given params.
-    :param request: The request object containing the params.
-    :param ext: The extension of the output image.
     """
     request.image_number = 1
 
@@ -188,35 +118,25 @@ async def binary_output(
                 started = True
                 CurrentTask.task = task
                 started_at = int(datetime.datetime.now().timestamp() * 1000)
-                CurrentTask.ct = RecordResponse(
-                    task_id=task.task_id,
-                    req_params=json.loads(raw_req.model_dump_json()),
-                    in_queue_mills=in_queue_mills,
-                    start_mills=started_at,
-                    task_status="running",
-                    progress=0,
-                    result=[]
-                )
             flag, product = task.yields.pop(0)
             if flag == 'preview':
                 if len(task.yields) > 0:
                     if task.yields[0][0] == 'preview':
                         continue
                 percentage, _, image = product
-                CurrentTask.ct.progress = percentage
-                CurrentTask.ct.preview = narray_to_base64img(image)
             if flag == 'finish':
                 finished = True
                 CurrentTask.task = None
-                await post_worker(task=task, started_at=started_at, target_name=save_name, ext=ext)
+                await post_worker(task=task, target_name=save_name, ext=request.output_format)
     try:
-        image = Image.open(task.results[0])
-        image_bytes = io.BytesIO()
-        image.save(image_bytes, format=ext.upper())
-        image_bytes.seek(0)
-        return Response(image_bytes.getvalue(), media_type=f"image/{ext}")
-    except IndexError:
-        return Response(status_code=204)
+        image = task.results[0]
+        image_array = image.astype(np.float32) / 255.0
+        tensor_image = torch.from_numpy(image_array)[None,]
+    except Exception:
+        black_image_size = (512, 512, 3)  # 高度、宽度和通道数
+        black_image_array = np.zeros(black_image_size, dtype=np.float32)
+        tensor_image = torch.from_numpy(black_image_array)[None,]
+    return tensor_image
 
 
 async def async_worker(request: CommonRequest, wait_for_result: bool = False) -> dict:

@@ -28,7 +28,7 @@ from modules.config import path_outputs
 SCRIPT_PATH = os.path.abspath(
     os.path.join(os.path.dirname(__file__), '../..'))
 
-output_dir = os.path.join(SCRIPT_PATH, 'outputs')
+output_dir = os.path.join(SCRIPT_PATH, 'output')
 
 STATIC_SERVER_BASE = 'http://127.0.0.1:7866'
 

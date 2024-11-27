@@ -47,8 +47,7 @@ async def generate_routes(
 
     if accept == "image":
         return await binary_output(
-            request=common_request,
-            ext=ext)
+            request=common_request)
 
     if common_request.stream_output:
         return EventSourceResponse(
