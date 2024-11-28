@@ -15,7 +15,7 @@ async def send_result_to_web_hook(url: str, result):
         return
     headers = {
         'Content-Type': 'application/json',
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:128.0) Gecko/20100101 Firefox/128.0'
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:134.0) Gecko/20100101 Firefox/134.0'
     }
     try:
         httpx.post(url, headers=headers, json=result, timeout=5, follow_redirects=True)

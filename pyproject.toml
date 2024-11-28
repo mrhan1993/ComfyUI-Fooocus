@@ -27,8 +27,7 @@ dependencies = [
     "rembg",
     "groundingdino-py",
     "segment_anything",
-    "sse_starlette",
-    "sqlalchemy"
+    "pydantic"
 ]
 
 [project.urls]

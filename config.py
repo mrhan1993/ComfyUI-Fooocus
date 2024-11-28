@@ -17,7 +17,8 @@ always_download_new_model = False
 disable_cuda_malloc = True
 in_browser = False
 
-hf_mirror = 'https://hf-mirror.com'
+# hf_mirror = 'https://hf-mirror.com'
+hf_mirror = None
 disable_header_check = None
 web_upload_size = 100
 external_working_path = None

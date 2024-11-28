@@ -1,7 +1,6 @@
 """
 Pre-process parameters
 """
-import copy
 import os
 import random
 
@@ -17,12 +16,11 @@ from modules import constants, config
 from modules.model_loader import load_file_from_url
 
 from apis.models.requests import CommonRequest
-from apis.utils.file_utils import save_base64, to_http
 from apis.utils.img_utils import read_input_image
 from apis.models.base import EnhanceCtrlNets, Lora, ImagePrompt
 
 ROOT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-INPUT_PATH = os.path.join(ROOT_DIR, '..', 'inputs')
+INPUT_PATH = os.path.join(ROOT_DIR, '..', 'input')
 
 
 def refresh_seed(seed_string: int | str | None) -> int:
@@ -176,7 +174,6 @@ async def pre_worker(request: CommonRequest):
     while len(request.enhance_ctrls) < 3:
         request.enhance_ctrls.append(EnhanceCtrlNets())
 
-    req_copy = copy.deepcopy(request)
     if request.inpaint_mask_image_upload is None and request.inpaint_input_image is not None:
         inpaint_image_size = request.inpaint_input_image.shape[:3]
         request.inpaint_mask_image_upload = np.zeros(inpaint_image_size, dtype=np.uint8)
@@ -185,20 +182,4 @@ async def pre_worker(request: CommonRequest):
         "mask": request.inpaint_mask_image_upload
     }
 
-    req_copy.uov_input_image = to_http(save_base64(req_copy.uov_input_image, INPUT_PATH), "inputs")
-    req_copy.inpaint_input_image = to_http(save_base64(req_copy.inpaint_input_image, INPUT_PATH), "inputs")
-    req_copy.inpaint_mask_image_upload = to_http(save_base64(req_copy.inpaint_mask_image_upload, INPUT_PATH), "inputs")
-    req_copy.enhance_input_image = to_http(save_base64(req_copy.enhance_input_image, INPUT_PATH), "inputs")
-
-    cn_imgs = []
-    controlnet_images = [list(group) for group in zip(*[iter(req_copy.controlnet_image)]*4)]
-    for cn in controlnet_images:
-        control_net = {
-            "cn_img": to_http(save_base64(cn[0], INPUT_PATH), "inputs"),
-            "cn_stop": cn[1],
-            "cn_weight": cn[2],
-            "cn_type": cn[3]
-        }
-        cn_imgs.append(control_net)
-    req_copy.controlnet_image = cn_imgs
-    return req_copy, request
+    return request
