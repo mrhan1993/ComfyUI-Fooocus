@@ -19,6 +19,7 @@ in_browser = False
 
 # hf_mirror = 'https://hf-mirror.com'
 hf_mirror = None
+rebuild_hash_cache = False
 disable_header_check = None
 web_upload_size = 100
 external_working_path = None

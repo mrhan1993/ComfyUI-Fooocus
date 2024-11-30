@@ -16,7 +16,7 @@ def str_bool(s: str) -> bool:
         s: str of enable or disable
     Returns: bool of True or False
     """
-    return s in ("enable", "true")
+    return s.lower() in ("enable", "true")
 
 def get_loras(loras: list) -> List[Lora]:
     """Convert ComfyUI loras to Fooocus loras"""
@@ -62,7 +62,7 @@ def get_enhance_ctrls(enhance_controls: list[dict]) -> List[EnhanceCtrlNets]:
     """Convert ComfyUI enhance controls to Fooocus enhance controls"""
     ctrls = []
     for enhance in enhance_controls:
-        enhance["enhance_enable"] = str_bool(enhance.get("enhance_enabled", "disable"))
+        enhance["enhance_enabled"] = str_bool(enhance.get("enhance_enabled", "disable"))
         enhance["enhance_inpaint_disable_initial_latent"] = str_bool(enhance.get("enhance_disable_initial_latent", "disable"))
         enhance["enhance_mask_invert"] = str_bool(enhance.get("enhance_mask_invert", "disable"))
         ctrls.append(EnhanceCtrlNets(**enhance))

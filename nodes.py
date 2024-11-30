@@ -1,5 +1,6 @@
 """Nodes for fooocus using in ComfyUI"""
 import asyncio
+import uuid
 
 import folder_paths
 import os
@@ -22,7 +23,7 @@ preset_list = list(set(preset_list))
 
 upscale_method = [
     "Disabled",
-    "Vary (subtle)",
+    "Vary (Subtle)",
     "Vary (Strong)",
     "Upscale (1.5x)",
     "Upscale (2x)",
@@ -95,6 +96,10 @@ class FooocusSettings:
     @staticmethod
     def process(**kwargs):
         return (kwargs,)
+
+    @staticmethod
+    def IS_CHANGED(**kwargs):
+        return uuid.uuid4().hex
 
 
 class LoraStacks:
@@ -178,6 +183,10 @@ class ImagePrompts:
     def process(**kwargs):
         return (kwargs,)
 
+    @staticmethod
+    def IS_CHANGED(**kwargs):
+        return uuid.uuid4().hex
+
 
 class EnhanceControl:
     def __init__(self):
@@ -186,7 +195,7 @@ class EnhanceControl:
     def INPUT_TYPES(cls):
         control = {
             "required": {
-                "enhance_enable": (["enable", "disable"], {"default": "disable"}),
+                "enhance_enabled": (["enable", "disable"], {"default": "disable"}),
                 "enhance_mask_dino_prompt": ("STRING", {"default": "", "multiline": False}),
                 "enhance_prompt": ("STRING", {"default": "", "multiline": False}),
                 "enhance_negative_prompt": ("STRING", {"default": "", "multiline": False}),
@@ -212,6 +221,10 @@ class EnhanceControl:
     @staticmethod
     def process(**kwargs):
         return (kwargs,)
+
+    @staticmethod
+    def IS_CHANGED(**kwargs):
+        return uuid.uuid4().hex
 
 
 class EnhanceControls:
@@ -243,6 +256,10 @@ class EnhanceControls:
     @staticmethod
     def process(**kwargs):
         return (kwargs,)
+
+    @staticmethod
+    def IS_CHANGED(**kwargs):
+        return uuid.uuid4().hex
 
 
 class FooocusSampler:
@@ -329,6 +346,10 @@ class InpaintOutpaint:
     def process(**kwargs):
         return (kwargs,)
 
+    @staticmethod
+    def IS_CHANGED(**kwargs):
+        return uuid.uuid4().hex
+
 
 class UpscaleVary:
     def __init__(self):
@@ -352,6 +373,10 @@ class UpscaleVary:
     @staticmethod
     def process(**kwargs):
         return (kwargs,)
+
+    @staticmethod
+    def IS_CHANGED(**kwargs):
+        return uuid.uuid4().hex
 
 
 # A dictionary that contains all nodes you want to export with their names
@@ -378,4 +403,3 @@ NODE_DISPLAY_NAME_MAPPINGS = {
     "InpaintOutpaint": "Inpaint Outpaint",
     "UpscaleVary": "Upscale Vary",
 }
-

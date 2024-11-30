@@ -466,6 +466,7 @@ def cleanup_prompt(prompt):
 
 
 def apply_wildcards(wildcard_text, rng, i, read_wildcards_in_order) -> str:
+    modules.config.update_files()
     for _ in range(modules.config.wildcards_max_bfs_depth):
         placeholders = re.findall(r'__([\w-]+)__', wildcard_text)
         if len(placeholders) == 0:

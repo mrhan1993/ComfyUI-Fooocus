@@ -1,3 +1,4 @@
+import os.path
 from typing import Tuple, List
 
 import ldm_patched.modules.model_management as model_management
@@ -14,7 +15,8 @@ from groundingdino.util.inference import load_model, preprocess_caption, get_phr
 
 class GroundingDinoModel(Model):
     def __init__(self):
-        self.config_file = 'extras/GroundingDINO/config/GroundingDINO_SwinT_OGC.py'
+        abs_file_path = os.path.dirname(os.path.abspath(__file__))
+        self.config_file = os.path.join(abs_file_path, '../config/GroundingDINO_SwinT_OGC.py')
         self.model = None
         self.load_device = torch.device('cpu')
         self.offload_device = torch.device('cpu')
