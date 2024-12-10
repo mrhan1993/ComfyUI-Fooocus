@@ -9,6 +9,14 @@ from apis.models.requests import (
 )
 
 
+class AlwaysEqualProxy(str):
+    def __eq__(self, _):
+        return True
+
+    def __ne__(self, _):
+        return False
+
+
 def str_bool(s: str) -> bool:
     """
     Convert enable or disable to True or False.

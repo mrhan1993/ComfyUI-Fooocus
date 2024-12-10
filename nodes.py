@@ -10,10 +10,12 @@ patch_all()
 # 不执行 patch_all() 会导致报错
 
 from modules.flags import scheduler_list, sampler_list
-from node_utils import params_to_params
+from node_utils import params_to_params, AlwaysEqualProxy
 from apis.utils.call_worker import binary_output
+from ldm_patched.modules.model_management import cleanup_models
 
 
+any_type = AlwaysEqualProxy("*")
 
 root_dir = os.path.dirname(os.path.realpath(__file__))
 preset_list = [p.split('.')[0] for p in os.listdir(f'{root_dir}/presets') if p.endswith('json')]
@@ -40,6 +42,27 @@ mask_model = [
     "isnet-anime",
     "sam"
 ]
+
+
+class ClearVram:
+    def __init__(self):
+        pass
+
+    @classmethod
+    def INPUT_TYPES(cls):
+        return {"required": {"anything": (any_type, {})},
+                "optional": {},
+                "hidden": {"unique_id": "UNIQUE_ID", "extra_pnginfo": "EXTRA_PNGINFO",}}
+    
+    RETURN_TYPES = (any_type,)
+    RETURN_NAMES = ("output",)
+    OUTPUT_NODE = True
+    FUNCTION = "empty_cache"
+    CATEGORY = "Fooocus"
+
+    def empty_cache(self, anything, unique_id=None, extra_pnginfo=None):
+        cleanup_models()
+        return (anything,)
 
 
 class FooocusSettings:

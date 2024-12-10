@@ -4,6 +4,7 @@ port = 8888
 base_url = '127.0.0.1'
 log_level = 'info'
 
+always_gpu = True
 share = False
 preset = None
 language = 'default'
