@@ -1,5 +1,6 @@
 """Nodes for fooocus using in ComfyUI"""
 import asyncio
+import time
 import uuid
 
 import folder_paths
@@ -12,7 +13,7 @@ patch_all()
 from modules.flags import scheduler_list, sampler_list
 from node_utils import params_to_params, AlwaysEqualProxy
 from apis.utils.call_worker import binary_output
-from ldm_patched.modules.model_management import cleanup_models
+from ldm_patched.modules.model_management import cleanup_models, unload_all_models
 
 
 any_type = AlwaysEqualProxy("*")
@@ -61,8 +62,14 @@ class ClearVram:
     CATEGORY = "Fooocus"
 
     def empty_cache(self, anything, unique_id=None, extra_pnginfo=None):
+        time.sleep(1)
         cleanup_models()
+        unload_all_models()
         return (anything,)
+
+    @staticmethod
+    def IS_CHANGED(**kwargs):
+        return uuid.uuid4().hex
 
 
 class FooocusSettings:
@@ -329,6 +336,10 @@ class FooocusSampler:
         request = params_to_params(kwargs)
         image = asyncio.run(binary_output(request))
         return (image,)
+    
+    @staticmethod
+    def IS_CHANGED(**kwargs):
+        return uuid.uuid4().hex
 
 
 class InpaintOutpaint:
@@ -413,6 +424,7 @@ NODE_CLASS_MAPPINGS = {
     "EnhanceControls": EnhanceControls,
     "InpaintOutpaint": InpaintOutpaint,
     "UpscaleVary": UpscaleVary,
+    "ClearVram": ClearVram,
 }
 
 # A dictionary that contains the friendly/humanly readable titles for the nodes
@@ -425,4 +437,5 @@ NODE_DISPLAY_NAME_MAPPINGS = {
     "EnhanceControls": "Enhance Controls",
     "InpaintOutpaint": "Inpaint Outpaint",
     "UpscaleVary": "Upscale Vary",
+    "ClearVram": "Clear Vram",
 }
