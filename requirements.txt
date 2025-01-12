@@ -24,3 +24,6 @@ segment_anything
 sse_starlette
 sqlalchemy
 pydantic
+prometheus_client
+nvidia-ml-py3
+websockets

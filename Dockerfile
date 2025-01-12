@@ -16,6 +16,7 @@
 #     git clone https://github.com/miaoshouai/ComfyUI-Miaoshouai-Tagger custom_nodes/ComfyUI-Miaoshouai-Tagger && \
 #     git clone https://github.com/chrisgoringe/cg-use-everywhere custom_nodes/cg-use-everywhere && \
 #     git clone https://github.com/ltdrdata/ComfyUI-Impact-Pack custom_nodes/ComfyUI-Impact-Pack && \
+#     git clone https://github.com/crystian/ComfyUI-Crystools custom_nodes/ComfyUI-Crystools && \
 #     pip install -r requirements.txt && \
 #     pip install gradio && \
 #     pip install -r custom_nodes/ComfyUI-Easy-Use/requirements.txt && \
@@ -25,6 +26,7 @@
 #     pip install -r custom_nodes/ComfyUI-Miaoshouai-Tagger/requirements.txt && \
 #     pip install -r custom_nodes/cg-use-everywhere/requirements.txt && \
 #     pip install -r custom_nodes/ComfyUI-Impact-Pack/requirements.txt && \
+#     pip install -r custom_nodes/ComfyUI-Crystools/requirements.txt && \
 #     pip cache purge
 
 # EXPOSE 8188
@@ -49,6 +51,7 @@ RUN cd / && git clone https://github.com/comfyanonymous/ComfyUI ComfyUI && cd /C
     git clone https://github.com/theUpsider/ComfyUI-Logic custom_nodes/ComfyUI-Logic && \
     git clone https://github.com/miaoshouai/ComfyUI-Miaoshouai-Tagger custom_nodes/ComfyUI-Miaoshouai-Tagger && \
     git clone https://github.com/ltdrdata/ComfyUI-Impact-Pack custom_nodes/ComfyUI-Impact-Pack && \
+    git clone https://github.com/crystian/ComfyUI-Crystools custom_nodes/ComfyUI-Crystools && \
     pip config set global.index-url https://mirror.nju.edu.cn/pypi/web/simple && \
     pip install -r requirements.txt && \
     pip install gradio && \
@@ -57,8 +60,11 @@ RUN cd / && git clone https://github.com/comfyanonymous/ComfyUI ComfyUI && cd /C
     pip install -r custom_nodes/rgthree-comfy/requirements.txt && \
     pip install -r custom_nodes/ComfyUI-Miaoshouai-Tagger/requirements.txt && \
     pip install -r custom_nodes/ComfyUI-Impact-Pack/requirements.txt && \
+    pip install -r custom_nodes/ComfyUI-Crystools/requirements.txt && \
     pip cache purge
 
-EXPOSE 8188
+EXPOSE 8188 8000
+
+ENTRYPOINT [ "/ComfyUI/entrypoint.sh" ]
 
 CMD ["python3", "main.py", "--listen"]
