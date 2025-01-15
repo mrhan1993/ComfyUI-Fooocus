@@ -1,10 +1,26 @@
 import json
 import asyncio
-from prometheus_client import start_http_server, Gauge, Info
+import os
+import subprocess
+import time
 import pynvml
 
 import websockets
 import aiohttp
+
+from prometheus_client import start_http_server, Gauge, Info
+from apis.utils.port_check import is_port_alive
+
+
+while True:
+    try:
+        live = is_port_alive('127.0.0.1', 8188)
+        if live:
+            break
+    except Exception as e:
+        print("Waiting for server to start")
+        time.sleep(3)
+        continue
 
 
 def get_gpu_info():
@@ -35,8 +51,9 @@ async def get_task_queue():
     except Exception:
         return 0, 0
 
-
+HOST_NAME = subprocess.getoutput("hostname")
 GPU_NAME = get_gpu_info()
+POD_NAME = os.getenv("POD_NAME", HOST_NAME)
 
 
 class AsyncWebSocketClient:
@@ -52,8 +69,8 @@ class AsyncWebSocketClient:
         self._vram_used_percent = 0
         self._lock = asyncio.Lock()  # Lock for thread-safe updates
 
-        self.gpu_info = Info('gpu_info', 'GPU info')
-        self.gpu_info.info({'name': GPU_NAME})
+        self.extras = Info('extras', 'Extras info')
+        self.extras.info({'gpu_name': GPU_NAME, 'pod_name': POD_NAME})
 
         self.queue_running_gauge = Gauge('queue_running', 'Running tasks in queue')
         self.queue_pending_gauge = Gauge('queue_pending', 'Pending tasks in queue')

@@ -63,7 +63,7 @@ RUN cd / && git clone https://github.com/comfyanonymous/ComfyUI ComfyUI && cd /C
     pip install -r custom_nodes/ComfyUI-Crystools/requirements.txt && \
     pip cache purge
 
-EXPOSE 8188 8000
+EXPOSE 8188 8000 8189/udp
 
 ENTRYPOINT [ "/ComfyUI/entrypoint.sh" ]
 
